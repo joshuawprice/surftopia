@@ -6,7 +6,9 @@ public class Movement : MonoBehaviour
     PlayerControls controls;
     Rigidbody rb;
 
-    public float speed = 5.0f;
+    public float movementSpeed = 5.0f;
+    public float movementForce = 10f;
+
     public float mouseSensitivity = 0.1f;
 
     Vector2 moveInput;
@@ -62,7 +64,10 @@ public class Movement : MonoBehaviour
     private void FixedUpdate()
     {
         Vector3 move = new Vector3(moveInput.x, 0, moveInput.y);
-        rb.MovePosition(rb.position + transform.TransformDirection(move) * speed * Time.fixedDeltaTime);
+        // Apply a force that adds to the current velocity in the desired direction
+        rb.AddForce(transform.TransformDirection(move) * movementForce, ForceMode.Force);
+        
+        ClampVelocity();
 
         if (isJumping)
         {
@@ -71,11 +76,20 @@ public class Movement : MonoBehaviour
         }
     }
 
+    void ClampVelocity()
+    {
+        // If current speed exceeds the maximum speed, clamp it
+        if (rb.velocity.magnitude > movementSpeed)
+        {
+            rb.velocity = rb.velocity.normalized * movementSpeed;  // Normalize velocity and scale by maximum speed
+        }
+    }
+
     // Utility method to check if the player is on the ground
     private bool IsGrounded()
     {
         // Checks if there's a collision on the player's feet
-        return Physics.Raycast(transform.position, Vector3.down, 0.6f);
+        return Physics.Raycast(transform.position, Vector3.down, 1.01f);
     }
 
     void OnEnable()
