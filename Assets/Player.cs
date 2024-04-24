@@ -66,8 +66,8 @@ public class Movement : MonoBehaviour
         Vector3 move = new Vector3(moveInput.x, 0, moveInput.y);
         // Apply a force that adds to the current velocity in the desired direction
         rb.AddForce(transform.TransformDirection(move) * movementForce, ForceMode.Force);
-        
-        ClampVelocity();
+
+        // ClampVelocity();
 
         if (isJumping)
         {
