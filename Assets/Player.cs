@@ -16,6 +16,7 @@ public class Movement : MonoBehaviour
     private Vector2 moveInput;
     private Vector2 lookInput;
     private float xRotation = 0f;
+    private float yRotation = 0f;
     private bool isJumping = false;
 
     void Awake()
@@ -52,8 +53,10 @@ public class Movement : MonoBehaviour
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
-        transform.localEulerAngles = new Vector3(0f, transform.localEulerAngles.y + mouseX, 0f);
-        Camera.main.transform.localEulerAngles = new Vector3(xRotation, 0f, 0f);
+        yRotation += mouseX;
+        yRotation %= 360;
+
+        playerCamera.transform.localEulerAngles = new Vector3(xRotation, yRotation, 0f);
     }
 
     private void FixedUpdate()
@@ -62,14 +65,16 @@ public class Movement : MonoBehaviour
 
         if (IsGrounded())
         {
-            // Apply a force that adds to the current velocity in the desired direction
-            rb.AddForce(transform.TransformDirection(moveInput) * movementForce, ForceMode.Force);
+            // Apply a force that adds to the current velocity in the desired direction.
+            Vector3 cameraDirection = playerCamera.TransformDirection(moveInput);
+            cameraDirection = new Vector3(cameraDirection.x, 0f, cameraDirection.z);
+            rb.AddForce(cameraDirection * movementForce, ForceMode.Force);
             ClampVelocity();
 
             if (isJumping)
             {
                 rb.AddForce(new Vector3(0, 5, 0), ForceMode.Impulse);
-                // Without this we jump multiple times instantaneously, later IsGrounded() will detect slants.
+                // Without this we jump multiple times instantaneously.
                 isJumping = false;
             }
         }
@@ -94,7 +99,9 @@ public class Movement : MonoBehaviour
             Vector3 velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
 
             float magnitude = velocity.magnitude;
-            Vector3 cameraForward = transform.forward;
+            Vector3 cameraForward = playerCamera.forward;
+            cameraForward.y = 0;
+            cameraForward.Normalize();
             rb.velocity = cameraForward * magnitude + y;
         }
     }
