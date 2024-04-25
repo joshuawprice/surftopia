@@ -19,6 +19,8 @@ public class Movement : MonoBehaviour
     private float yRotation = 0f;
     private bool isJumping = false;
 
+    private Vector3 originalPosition;
+
     void Awake()
     {
         controls = new PlayerControls();
@@ -29,9 +31,15 @@ public class Movement : MonoBehaviour
         controls.gameplay.move.canceled += ctx => moveInput = Vector2.zero;
         controls.gameplay.jump.performed += ctx => isJumping = true;
         controls.gameplay.jump.canceled += ctx => isJumping = false;
+        controls.gameplay.reset.performed += ctx => {
+            transform.position = originalPosition;
+            rb.velocity = Vector3.zero;
+        };
 
         controls.gameplay.look.performed += ctx => lookInput = ctx.ReadValue<Vector2>();
         controls.gameplay.look.canceled += ctx => lookInput = Vector2.zero;
+
+        originalPosition = transform.position;
     }
 
     // Start is called before the first frame update
@@ -65,18 +73,28 @@ public class Movement : MonoBehaviour
 
         if (IsGrounded())
         {
-            // Apply a force that adds to the current velocity in the desired direction.
-            Vector3 cameraDirection = playerCamera.TransformDirection(moveInput);
-            cameraDirection = new Vector3(cameraDirection.x, 0f, cameraDirection.z);
-            rb.AddForce(cameraDirection * movementForce, ForceMode.Force);
-            ClampVelocity();
-
             if (isJumping)
             {
                 rb.AddForce(new Vector3(0, 5, 0), ForceMode.Impulse);
                 // Without this we jump multiple times instantaneously.
                 isJumping = false;
             }
+
+            if (moveInput.sqrMagnitude > 0)
+            {
+                // Apply a force that adds to the current velocity in the desired direction.
+                Vector3 cameraDirection = playerCamera.TransformDirection(moveInput);
+                cameraDirection = new Vector3(cameraDirection.x, 0f, cameraDirection.z);
+                rb.AddForce(cameraDirection * movementForce, ForceMode.Force);
+            }
+            else
+            {
+                rb.velocity -= rb.velocity * 0.2f;
+            }
+
+            ClampVelocity();
+
+
         }
         else
         {
