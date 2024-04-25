@@ -3,28 +3,31 @@ using UnityEngine.InputSystem;
 
 public class Movement : MonoBehaviour
 {
-    PlayerControls controls;
-    Rigidbody rb;
-
     public float movementSpeed = 5.0f;
+    public float airAcceleration = 1f;
     public float movementForce = 10f;
 
     public float mouseSensitivity = 0.1f;
 
-    Vector2 moveInput;
-    Vector2 lookInput;
-    float xRotation = 0f;
+    private PlayerControls controls;
+    private Rigidbody rb;
+    private Transform playerCamera;
 
-    bool isJumping = false;
+    private Vector2 moveInput;
+    private Vector2 lookInput;
+    private float xRotation = 0f;
+    private bool isJumping = false;
 
     void Awake()
     {
         controls = new PlayerControls();
         rb = GetComponent<Rigidbody>();
+        playerCamera = Camera.main.transform;
 
         controls.gameplay.move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
         controls.gameplay.move.canceled += ctx => moveInput = Vector2.zero;
-        controls.gameplay.jump.performed += OnJump;
+        controls.gameplay.jump.performed += ctx => isJumping = true;
+        controls.gameplay.jump.canceled += ctx => isJumping = false;
 
         controls.gameplay.look.performed += ctx => lookInput = ctx.ReadValue<Vector2>();
         controls.gameplay.look.canceled += ctx => lookInput = Vector2.zero;
@@ -53,43 +56,68 @@ public class Movement : MonoBehaviour
         Camera.main.transform.localEulerAngles = new Vector3(xRotation, 0f, 0f);
     }
 
-    void OnJump(InputAction.CallbackContext context)
+    private void FixedUpdate()
     {
+        Vector3 moveInput = new Vector3(this.moveInput.x, 0, this.moveInput.y);
+
         if (IsGrounded())
         {
-            isJumping = true;
+            // Apply a force that adds to the current velocity in the desired direction
+            rb.AddForce(transform.TransformDirection(moveInput) * movementForce, ForceMode.Force);
+            ClampVelocity();
+
+            if (isJumping)
+            {
+                rb.AddForce(new Vector3(0, 5, 0), ForceMode.Impulse);
+                // Without this we jump multiple times instantaneously, later IsGrounded() will detect slants.
+                isJumping = false;
+            }
+        }
+        else
+        {
+            Strafe(moveInput);
         }
     }
 
-    private void FixedUpdate()
+    private void Strafe(Vector3 moveInput)
     {
-        Vector3 move = new Vector3(moveInput.x, 0, moveInput.y);
-        // Apply a force that adds to the current velocity in the desired direction
-        rb.AddForce(transform.TransformDirection(move) * movementForce, ForceMode.Force);
-
-        // ClampVelocity();
-
-        if (isJumping)
+        // Skip calculations if we can.
+        if (moveInput.sqrMagnitude == 0)
         {
-            rb.AddForce(new Vector3(0, 5, 0), ForceMode.Impulse);
-            isJumping = false;
+            return;
+        }
+
+        if (moveInput.x > 0 || moveInput.x < 0)
+        {
+            // Don't forget gravity!
+            Vector3 y = new Vector3(0, rb.velocity.y, 0);
+            Vector3 velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+
+            float magnitude = velocity.magnitude;
+            Vector3 cameraForward = transform.forward;
+            rb.velocity = cameraForward * magnitude + y;
         }
     }
 
     void ClampVelocity()
     {
-        // If current speed exceeds the maximum speed, clamp it
-        if (rb.velocity.magnitude > movementSpeed)
-        {
-            rb.velocity = rb.velocity.normalized * movementSpeed;  // Normalize velocity and scale by maximum speed
-        }
+        // We need the y value later as we're not clamping that.
+        Vector3 velocity = rb.velocity;
+
+        // Clamp horizontal movement.
+        Vector3 horizontalVelocity = new Vector3(velocity.x, 0, velocity.z);
+        horizontalVelocity = Vector3.ClampMagnitude(horizontalVelocity, movementSpeed);
+
+        // Apply clamped x and z velocity.
+        rb.velocity = new Vector3(horizontalVelocity.x, velocity.y, horizontalVelocity.z);
     }
 
-    // Utility method to check if the player is on the ground
     private bool IsGrounded()
     {
-        // Checks if there's a collision on the player's feet
-        return Physics.Raycast(transform.position, Vector3.down, 1.01f);
+        // TODO: Could check the normal of the ground to make sure jump on a ramp is impossible.
+        // Checks if there's a collision on the player's feet.
+        // Slides on 31 degrees, jumps on 30 degrees.
+        return Physics.Raycast(transform.position, Vector3.down, 0.90875f);
     }
 
     void OnEnable()
