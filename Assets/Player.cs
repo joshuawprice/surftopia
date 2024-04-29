@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class Movement : MonoBehaviour
 {
@@ -31,7 +30,8 @@ public class Movement : MonoBehaviour
         controls.gameplay.move.canceled += ctx => moveInput = Vector2.zero;
         controls.gameplay.jump.performed += ctx => isJumping = true;
         controls.gameplay.jump.canceled += ctx => isJumping = false;
-        controls.gameplay.reset.performed += ctx => {
+        controls.gameplay.reset.performed += ctx =>
+        {
             transform.position = originalPosition;
             rb.velocity = Vector3.zero;
         };
@@ -75,9 +75,13 @@ public class Movement : MonoBehaviour
         {
             if (isJumping)
             {
-                rb.AddForce(new Vector3(0, 5, 0), ForceMode.Impulse);
-                // Without this we jump multiple times instantaneously.
-                isJumping = false;
+                if (rb.velocity.y == 0f)
+                {
+                    rb.AddForce(new Vector3(0, 5, 0), ForceMode.Impulse);
+                    // Without this we jump multiple times instantaneously.
+                    // isJumping = false;
+                }
+
             }
 
             if (moveInput.sqrMagnitude > 0)
@@ -89,6 +93,7 @@ public class Movement : MonoBehaviour
             }
             else
             {
+                // Remove speed through "friction".
                 rb.velocity -= rb.velocity * 0.2f;
             }
 
@@ -98,30 +103,71 @@ public class Movement : MonoBehaviour
         }
         else
         {
-            Strafe(moveInput);
+            AirMove(moveInput);
         }
     }
 
-    private void Strafe(Vector3 moveInput)
+
+    private void AirMove(Vector3 moveInput)
     {
-        // Skip calculations if we can.
         if (moveInput.sqrMagnitude == 0)
         {
             return;
         }
 
-        if (moveInput.x > 0 || moveInput.x < 0)
-        {
-            // Don't forget gravity!
-            Vector3 y = new Vector3(0, rb.velocity.y, 0);
-            Vector3 velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+        Vector3 forward = playerCamera.transform.forward;
+        Vector3 right = playerCamera.transform.right;
+        Debug.Log($"Forward: {forward}");
+        Debug.Log($"Right: {right}");
 
-            float magnitude = velocity.magnitude;
-            Vector3 cameraForward = playerCamera.forward;
-            cameraForward.y = 0;
-            cameraForward.Normalize();
-            rb.velocity = cameraForward * magnitude + y;
+        // Remove the pitch that the camera is at from the movement calculation.
+        forward.y = 0;
+        forward.Normalize();
+
+        Vector3 wishVel = forward * moveInput.z + right * moveInput.x;
+        wishVel.y = 0;
+
+        Vector3 wishDir = wishVel.normalized;
+        float wishSpeed = wishVel.magnitude;
+
+        // Mine
+        float maxSpeed = 200;
+        float airAccelerate = 200;
+
+        // Clamp to max speed.
+        if (wishSpeed > maxSpeed)
+        {
+            wishVel = wishVel.normalized * maxSpeed;
+            wishSpeed = maxSpeed;
         }
+
+        AirAccelerate(wishDir, wishSpeed, airAccelerate);
+    }
+
+    private void AirAccelerate(Vector3 wishDir, float wishSpeed, float accel)
+    {
+        // Mine
+        float airSpeedCap = 200;
+
+        // Cap speed
+        float wishSpd = Mathf.Min(wishSpeed, airSpeedCap);
+
+        // Determine veer amount
+        float currentSpeed = Vector3.Dot(rb.velocity, wishDir);
+
+        // See how much to add
+        float addSpeed = wishSpd - currentSpeed;
+        if (addSpeed <= 0)
+            return;
+
+        // Determine acceleration speed after acceleration
+        float accelSpeed = accel * wishSpeed;
+
+        // Cap it
+        accelSpeed = Mathf.Min(accelSpeed, addSpeed);
+
+        // Adjust player velocity
+        rb.velocity += accelSpeed * wishDir;
     }
 
     void ClampVelocity()
