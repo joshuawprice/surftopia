@@ -66,34 +66,7 @@ public class Movement : MonoBehaviour
 
         if (IsGrounded())
         {
-            if (isJumping)
-            {
-                if (rb.velocity.y == 0f)
-                {
-                    rb.AddForce(new Vector3(0, 5, 0), ForceMode.Impulse);
-                    // Without this we jump multiple times instantaneously.
-                    // isJumping = false;
-                }
-
-            }
-
-            if (moveInput.sqrMagnitude > 0)
-            {
-                // Apply a force that adds to the current velocity in the desired direction.
-                Vector3 cameraDirection = playerCamera.TransformDirection(moveInput);
-                cameraDirection = new Vector3(cameraDirection.x, 0f, cameraDirection.z);
-                float movementForce = 60f;
-                rb.AddForce(cameraDirection * movementForce, ForceMode.Force);
-            }
-            else
-            {
-                // Remove speed through "friction".
-                rb.velocity -= rb.velocity * 0.2f;
-            }
-
-            ClampVelocity();
-
-
+            GroundMove(moveInput);
         }
         else
         {
@@ -101,6 +74,33 @@ public class Movement : MonoBehaviour
         }
     }
 
+    private void GroundMove(Vector3 moveInput)
+    {
+        if (isJumping)
+        {
+            if (rb.velocity.y == 0f)
+            {
+                rb.AddForce(new Vector3(0, 5, 0), ForceMode.Impulse);
+                return;
+            }
+        }
+
+        if (moveInput.sqrMagnitude > 0)
+        {
+            // Apply a force that adds to the current velocity in the desired direction.
+            Vector3 cameraDirection = playerCamera.TransformDirection(moveInput);
+            cameraDirection = new Vector3(cameraDirection.x, 0f, cameraDirection.z);
+            float movementForce = 60f;
+            rb.AddForce(cameraDirection * movementForce, ForceMode.Force);
+        }
+        else
+        {
+            // Remove speed through "friction".
+            rb.velocity -= rb.velocity * 0.2f;
+        }
+
+        ClampVelocity();
+    }
 
     private void AirMove(Vector3 moveInput)
     {
