@@ -2,12 +2,7 @@ using UnityEngine;
 
 public class Movement : MonoBehaviour
 {
-    public float movementSpeed = 5.0f;
-    public float airAcceleration = 1f;
-    public float movementForce = 10f;
-
-    public float mouseSensitivity = 0.1f;
-
+    private float mouseSensitivity = 0.1f;
     private PlayerControls controls;
     private Rigidbody rb;
     private Transform playerCamera;
@@ -42,7 +37,6 @@ public class Movement : MonoBehaviour
         originalPosition = transform.position;
     }
 
-    // Start is called before the first frame update
     void Start()
     {
         // Lock the cursor to the center of the screen
@@ -52,7 +46,6 @@ public class Movement : MonoBehaviour
         Cursor.visible = false;
     }
 
-    // Update is called once per frame
     void Update()
     {
         float mouseX = lookInput.x * mouseSensitivity;
@@ -89,6 +82,7 @@ public class Movement : MonoBehaviour
                 // Apply a force that adds to the current velocity in the desired direction.
                 Vector3 cameraDirection = playerCamera.TransformDirection(moveInput);
                 cameraDirection = new Vector3(cameraDirection.x, 0f, cameraDirection.z);
+                float movementForce = 60f;
                 rb.AddForce(cameraDirection * movementForce, ForceMode.Force);
             }
             else
@@ -128,9 +122,8 @@ public class Movement : MonoBehaviour
         Vector3 wishDir = wishVel.normalized;
         float wishSpeed = wishVel.magnitude;
 
-        // Mine
-        float maxSpeed = 200;
-        float airAccelerate = 200;
+        float maxSpeed = 3500;
+        float airAccelerate = 20;
 
         // Clamp to max speed.
         if (wishSpeed > maxSpeed)
@@ -144,27 +137,28 @@ public class Movement : MonoBehaviour
 
     private void AirAccelerate(Vector3 wishDir, float wishSpeed, float accel)
     {
-        // Mine
-        float airSpeedCap = 200;
+        float airSpeedCap = 3500;
 
-        // Cap speed
+        // Cap speed.
         float wishSpd = Mathf.Min(wishSpeed, airSpeedCap);
 
-        // Determine veer amount
+        // Determine veer amount.
         float currentSpeed = Vector3.Dot(rb.velocity, wishDir);
 
-        // See how much to add
+        // See how much speed to add.
         float addSpeed = wishSpd - currentSpeed;
         if (addSpeed <= 0)
+        {
             return;
+        }
 
-        // Determine acceleration speed after acceleration
+        // Determine speed after acceleration.
         float accelSpeed = accel * wishSpeed;
 
-        // Cap it
+        // Cap acceleration speed.
         accelSpeed = Mathf.Min(accelSpeed, addSpeed);
 
-        // Adjust player velocity
+        // Adjust player velocity.
         rb.velocity += accelSpeed * wishDir;
     }
 
@@ -175,6 +169,7 @@ public class Movement : MonoBehaviour
 
         // Clamp horizontal movement.
         Vector3 horizontalVelocity = new Vector3(velocity.x, 0, velocity.z);
+        float movementSpeed = 8.0f;
         horizontalVelocity = Vector3.ClampMagnitude(horizontalVelocity, movementSpeed);
 
         // Apply clamped x and z velocity.
