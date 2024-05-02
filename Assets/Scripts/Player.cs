@@ -117,8 +117,6 @@ public class Movement : MonoBehaviour
 
         Vector3 forward = playerCamera.transform.forward;
         Vector3 right = playerCamera.transform.right;
-        Debug.Log($"Forward: {forward}");
-        Debug.Log($"Right: {right}");
 
         // Remove the pitch that the camera is at from the movement calculation.
         forward.y = 0;
