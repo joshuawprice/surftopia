@@ -178,10 +178,16 @@ public class Movement : MonoBehaviour
 
     private bool IsGrounded()
     {
-        // TODO: Could check the normal of the ground to make sure jump on a ramp is impossible.
-        // Checks if there's a collision on the player's feet.
-        // Slides on 31 degrees, jumps on 30 degrees.
-        return Physics.Raycast(transform.position, Vector3.down, 0.90875f);
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, Vector3.down, out hit, 1.0f))
+        {
+            // Beware, a 35 degree angle may be considered 34.999.
+            if (Vector3.Angle(Vector3.up, hit.normal) < 35f)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     void OnEnable()
