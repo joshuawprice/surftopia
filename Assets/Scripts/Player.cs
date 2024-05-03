@@ -135,15 +135,15 @@ public class Movement : MonoBehaviour
         AirAccelerate(wishDir, wishSpeed, airAccelerate);
     }
 
-    private void AirAccelerate(Vector3 wishDir, float wishSpeed, float accel)
+    private void AirAccelerate(Vector3 desiredDirection, float desiredSpeed, float acceleration)
     {
         float airSpeedCap = 3500;
 
         // Cap speed.
-        float wishSpd = Mathf.Min(wishSpeed, airSpeedCap);
+        float wishSpd = Mathf.Min(desiredSpeed, airSpeedCap);
 
         // Determine veer amount.
-        float currentSpeed = Vector3.Dot(rb.velocity, wishDir);
+        float currentSpeed = Vector3.Dot(rb.velocity, desiredDirection);
 
         // See how much speed to add.
         float addSpeed = wishSpd - currentSpeed;
@@ -153,13 +153,13 @@ public class Movement : MonoBehaviour
         }
 
         // Determine speed after acceleration.
-        float accelSpeed = accel * wishSpeed;
+        float accelSpeed = acceleration * desiredSpeed;
 
         // Cap acceleration speed.
         accelSpeed = Mathf.Min(accelSpeed, addSpeed);
 
         // Adjust player velocity.
-        rb.velocity += accelSpeed * wishDir;
+        rb.velocity += accelSpeed * desiredDirection;
     }
 
     void ClampVelocity()
