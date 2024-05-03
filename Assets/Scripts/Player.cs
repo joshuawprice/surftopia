@@ -29,6 +29,7 @@ public class Movement : MonoBehaviour
         {
             transform.position = originalPosition;
             rb.velocity = Vector3.zero;
+            GameManager.Instance.ResetLevel();
         };
 
         controls.gameplay.look.performed += ctx => lookInput = ctx.ReadValue<Vector2>();
