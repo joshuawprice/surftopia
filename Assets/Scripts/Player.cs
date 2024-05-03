@@ -6,6 +6,7 @@ public class Movement : MonoBehaviour
     private PlayerControls controls;
     private Rigidbody rb;
     private Transform playerCamera;
+    private AudioSource audioSource;
 
     private Vector2 moveInput;
     private Vector2 lookInput;
@@ -36,6 +37,9 @@ public class Movement : MonoBehaviour
         controls.gameplay.look.canceled += ctx => lookInput = Vector2.zero;
 
         originalPosition = transform.position;
+
+        audioSource = GetComponent<AudioSource>();
+        audioSource.volume = 0;
     }
 
     void Start()
@@ -72,6 +76,16 @@ public class Movement : MonoBehaviour
         else
         {
             AirMove(moveInput);
+        }
+
+        float velocity = rb.velocity.magnitude;
+        // Don't divide by zero.
+        if (velocity != 0)
+        {
+            audioSource.volume = Mathf.Clamp01(rb.velocity.magnitude / 40);
+        }
+        else{
+            audioSource.volume = 0;
         }
     }
 

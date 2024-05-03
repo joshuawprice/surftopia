@@ -5,9 +5,12 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 0
+    path: Assets/Polytope Studio/Lowpoly_Demos/Environment_Free/Environment_Free.unity
+    guid: c732593fe76e5a84197f9cd13963f706
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 0ff3de05359ffc3aa865c1cc363ab263,
       type: 2}
