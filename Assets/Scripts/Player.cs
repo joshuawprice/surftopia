@@ -123,7 +123,7 @@ public class Movement : MonoBehaviour
         float wishSpeed = wishVel.magnitude;
 
         float maxSpeed = 3500;
-        float airAccelerate = 20;
+        float airAccelerate = 10;
 
         // Clamp to max speed.
         if (wishSpeed > maxSpeed)
