@@ -15,6 +15,7 @@ public class Movement : MonoBehaviour
     private bool isJumping = false;
 
     private Vector3 originalPosition;
+    private bool isLevelReset;
 
     void Awake()
     {
@@ -24,14 +25,12 @@ public class Movement : MonoBehaviour
 
         controls.gameplay.move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
         controls.gameplay.move.canceled += ctx => moveInput = Vector2.zero;
+
         controls.gameplay.jump.performed += ctx => isJumping = true;
         controls.gameplay.jump.canceled += ctx => isJumping = false;
-        controls.gameplay.reset.performed += ctx =>
-        {
-            transform.position = originalPosition;
-            rb.velocity = Vector3.zero;
-            GameManager.Instance.ResetLevel();
-        };
+
+        controls.gameplay.reset.performed += ctx => GameManager.Instance.ResetLevel();
+        GameManager.Instance.OnResetLevel += () => isLevelReset = true;
 
         controls.gameplay.look.performed += ctx => lookInput = ctx.ReadValue<Vector2>();
         controls.gameplay.look.canceled += ctx => lookInput = Vector2.zero;
@@ -84,8 +83,16 @@ public class Movement : MonoBehaviour
         {
             audioSource.volume = Mathf.Clamp01(rb.velocity.magnitude / 40);
         }
-        else{
+        else
+        {
             audioSource.volume = 0;
+        }
+
+        if (isLevelReset)
+        {
+            transform.position = originalPosition;
+            rb.velocity = Vector3.zero;
+            isLevelReset = false;
         }
     }
 

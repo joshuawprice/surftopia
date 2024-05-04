@@ -10,7 +10,7 @@ public class StopwatchUI : MonoBehaviour
     private void Start()
     {
         isRunning = true;
-        GameManager.OnReset += ResetStopwatch;
+        GameManager.Instance.OnResetLevel += ResetStopwatch;
     }
 
     private void Update()
@@ -44,6 +44,6 @@ public class StopwatchUI : MonoBehaviour
         int seconds = Mathf.FloorToInt(currentTime % 60f);
         int milliseconds = Mathf.FloorToInt((currentTime * 1000) % 1000);
 
-        gameObject.GetComponent<TextMeshProUGUI>().text = string.Format("{0:00}:{1:00}:{2:000}", minutes, seconds, milliseconds);
+        gameObject.GetComponent<TextMeshProUGUI>().text = string.Format("{0:00}:{1:00}.{2:000}", minutes, seconds, milliseconds);
     }
 }

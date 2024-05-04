@@ -1,27 +1,39 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    // Game Manager singleton setup.
     private static GameManager _instance;
-    public static GameManager Instance { get => _instance; private set { _instance = value; } }
-
-    public static event Action OnReset;
-
-    void Awake()
+    public static GameManager Instance
     {
-        // Using the singleton pattern, ensure only one instance of GameManager exists.
-        if (Instance != null && _instance != this)
+        get
         {
-            Destroy(gameObject);
-            return;
+            if (_instance == null)
+            {
+                GameObject gameManager = new GameObject("GameManager");
+                _instance = gameManager.AddComponent<GameManager>();
+                DontDestroyOnLoad(gameManager);
+            }
+            return _instance;
         }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
     }
+
+    public event Action OnResetLevel;
+
+    private List<float> _scores = new List<float>();
+    public List<float> Scores { get { return _scores; } }
 
     public void ResetLevel()
     {
-        OnReset?.Invoke();
+        OnResetLevel?.Invoke();
+    }
+
+    public void AddScore(float score)
+    {
+        _scores.Add(score);
     }
 }
