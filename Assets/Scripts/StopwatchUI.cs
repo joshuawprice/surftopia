@@ -15,6 +15,12 @@ public class StopwatchUI : MonoBehaviour
         GameManager.Instance.OnFinishLevel += SaveStopwatch;
     }
 
+    private void OnDestroy()
+    {
+        GameManager.Instance.OnResetLevel -= ResetStopwatch;
+        GameManager.Instance.OnFinishLevel -= SaveStopwatch;
+    }
+
     private void Update()
     {
         if (isRunning)

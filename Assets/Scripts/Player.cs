@@ -46,10 +46,10 @@ public class Movement : MonoBehaviour
 
     void Start()
     {
-        // Lock the cursor to the center of the screen
+        // Lock the cursor to the center of the screen.
         Cursor.lockState = CursorLockMode.Locked;
 
-        // Hide the cursor from view
+        // Hide the cursor from view.
         Cursor.visible = false;
     }
 
