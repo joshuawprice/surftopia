@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using System;
+using UnityEditor;
 
 public class StopwatchUI : MonoBehaviour
 {
@@ -11,6 +12,7 @@ public class StopwatchUI : MonoBehaviour
     {
         isRunning = true;
         GameManager.Instance.OnResetLevel += ResetStopwatch;
+        GameManager.Instance.OnFinishLevel += SaveStopwatch;
     }
 
     private void Update()
@@ -36,6 +38,11 @@ public class StopwatchUI : MonoBehaviour
     {
         currentTime = 0f;
         UpdateTimerUI();
+    }
+
+    private void SaveStopwatch()
+    {
+        GameManager.Instance.AddScore(currentTime);
     }
 
     private void UpdateTimerUI()

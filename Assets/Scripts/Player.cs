@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Movement : MonoBehaviour
 {
@@ -34,6 +35,8 @@ public class Movement : MonoBehaviour
 
         controls.gameplay.look.performed += ctx => lookInput = ctx.ReadValue<Vector2>();
         controls.gameplay.look.canceled += ctx => lookInput = Vector2.zero;
+
+        controls.gameplay.finish.performed += ctx => GameManager.Instance.FinishLevel();
 
         originalPosition = transform.position;
 

@@ -1,8 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -22,14 +21,21 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public event Action OnResetLevel;
-
     private List<float> _scores = new List<float>();
     public List<float> Scores { get { return _scores; } }
+
+    public event Action OnResetLevel;
+    public event Action OnFinishLevel;
 
     public void ResetLevel()
     {
         OnResetLevel?.Invoke();
+    }
+
+    public void FinishLevel()
+    {
+        OnFinishLevel?.Invoke();
+        SceneManager.LoadScene("Scoreboard");
     }
 
     public void AddScore(float score)
